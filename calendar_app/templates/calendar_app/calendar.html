@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Beautiful Calendar - {{ month_name }} {{ year }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .calendar-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .month-year {
+            font-size: 32px;
+            font-weight: bold;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .nav-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .weekday {
+            text-align: center;
+            font-weight: 600;
+            color: #667eea;
+            padding: 15px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+
+        .day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 500;
+            color: #333;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .day:hover {
+            background: #e9ecef;
+            transform: scale(1.05);
+        }
+
+        .day.empty {
+            background: transparent;
+            cursor: default;
+        }
+
+        .day.empty:hover {
+            transform: none;
+        }
+
+        .day.today {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+        }
+
+        .day.today:hover {
+            transform: scale(1.08);
+        }
+
+        .navigation {
+            display: flex;
+            gap: 10px;
+        }
+
+        @media (max-width: 600px) {
+            .calendar-container {
+                padding: 20px;
+            }
+
+            .month-year {
+                font-size: 24px;
+            }
+
+            .nav-button {
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+
+            .day {
+                font-size: 14px;
+            }
+
+            .weekday {
+                font-size: 12px;
+                padding: 10px 5px;
+            }
+        }
+
+        .today-badge {
+            position: absolute;
+            bottom: 3px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background: white;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <div class="calendar-container">
+        <div class="calendar-header">
+            <div class="month-year">{{ month_name }} {{ year }}</div>
+            <div class="navigation">
+                <a href="?year={{ prev_year }}&month={{ prev_month }}" class="nav-button">← Previous</a>
+                <a href="?year={{ today.year }}&month={{ today.month }}" class="nav-button">Today</a>
+                <a href="?year={{ next_year }}&month={{ next_month }}" class="nav-button">Next →</a>
+            </div>
+        </div>
+
+        <div class="weekdays">
+            {% for weekday in weekday_names %}
+                <div class="weekday">{{ weekday|slice:":3" }}</div>
+            {% endfor %}
+        </div>
+
+        <div class="calendar-grid">
+            {% for week in calendar %}
+                {% for day in week %}
+                    {% if day == 0 %}
+                        <div class="day empty"></div>
+                    {% else %}
+                        <div class="day {% if today.year == year and today.month == month and today.day == day %}today{% endif %}">
+                            {{ day }}
+                            {% if today.year == year and today.month == month and today.day == day %}
+                                <div class="today-badge"></div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
