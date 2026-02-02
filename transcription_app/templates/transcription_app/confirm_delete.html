@@ -1,0 +1,24 @@
+{% extends 'transcription_app/base.html' %}
+
+{% block title %}Delete Transcription - Whisper Transcription{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Delete Transcription</h2>
+    <p style="margin-bottom: 20px;">
+        Are you sure you want to delete the transcription for
+        <strong>{{ transcription.original_filename }}</strong>?
+    </p>
+    <p style="color: #f87171; margin-bottom: 20px;">
+        This action cannot be undone.
+    </p>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="actions">
+            <a href="{% url 'transcription_detail' pk=transcription.pk %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-danger">Delete</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

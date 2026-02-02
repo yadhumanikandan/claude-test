@@ -1,0 +1,30 @@
+{% extends 'transcription_app/base.html' %}
+
+{% block title %}All Transcriptions - Whisper Transcription{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>All Transcriptions</h2>
+
+    {% if transcriptions %}
+    <ul class="transcription-list">
+        {% for item in transcriptions %}
+        <li class="transcription-item">
+            <a href="{% url 'transcription_detail' pk=item.pk %}">
+                <strong>{{ item.original_filename }}</strong>
+                <span class="meta" style="margin-left: 10px;">{{ item.created_at|date:"M d, Y H:i" }}</span>
+            </a>
+            <span class="status status-{{ item.status }}">{{ item.get_status_display }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <div class="empty-state">
+        <p>No transcriptions yet.</p>
+        <p style="margin-top: 10px;">
+            <a href="{% url 'transcription_home' %}" class="btn btn-primary">Upload Your First Audio</a>
+        </p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
