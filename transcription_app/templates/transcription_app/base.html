@@ -200,6 +200,17 @@
             color: #9ca3af;
         }
 
+        .status-downloading {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+        }
+
+        .messages .warning {
+            background: rgba(251, 191, 36, 0.2);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            color: #fbbf24;
+        }
+
         .transcript-box {
             background: rgba(0, 0, 0, 0.3);
             border-radius: 12px;
@@ -268,6 +279,8 @@
         <nav>
             <a href="{% url 'transcription_home' %}">Upload</a>
             <a href="{% url 'transcription_list' %}">All Transcriptions</a>
+            <a href="{% url 'cdr_list' %}">Call Records</a>
+            <a href="{% url 'pbx_settings' %}">PBX Settings</a>
         </nav>
 
         {% if messages %}

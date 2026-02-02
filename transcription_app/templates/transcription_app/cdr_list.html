@@ -1,0 +1,151 @@
+{% extends 'transcription_app/base.html' %}
+
+{% block title %}Call Records - Whisper Transcription{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>Call Detail Records</h2>
+        <div class="filters">
+            <select onchange="filterByPBX(this.value)" class="filter-select">
+                <option value="">All PBX Systems</option>
+                {% for config in pbx_configs %}
+                <option value="{{ config.pk }}" {% if pbx_filter == config.pk|stringformat:"s" %}selected{% endif %}>
+                    {{ config.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    {% if cdr_records %}
+    <div class="cdr-table-wrapper">
+        <table class="cdr-table">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Caller</th>
+                    <th>Callee</th>
+                    <th>Duration</th>
+                    <th>Status</th>
+                    <th>Recording</th>
+                    <th>Transcription</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in cdr_records %}
+                <tr>
+                    <td>{{ record.call_time|date:"M d, H:i" }}</td>
+                    <td>{{ record.caller }}</td>
+                    <td>{{ record.callee }}</td>
+                    <td>
+                        {% widthratio record.duration 60 1 as minutes %}
+                        {% widthratio record.duration 1 1 as seconds %}
+                        {{ minutes|default:"0" }}m {{ record.duration|divisibleby:60|yesno:","|default:"" }}{{ record.duration|add:0 }}s
+                    </td>
+                    <td>
+                        <span class="status-badge {% if record.status == 'ANSWERED' %}success{% else %}muted{% endif %}">
+                            {{ record.status }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if record.recording_file %}
+                        <span class="status-badge success">Yes</span>
+                        {% else %}
+                        <span class="status-badge muted">No</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if record.transcription %}
+                        <a href="{% url 'transcription_detail' pk=record.transcription.pk %}" class="btn btn-secondary btn-xs">
+                            View
+                        </a>
+                        {% else %}
+                        <span class="status-badge muted">-</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <p>No call records found.</p>
+        <p style="color: #71717a;">Sync your PBX to fetch call records.</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .filters {
+        display: flex;
+        gap: 10px;
+    }
+    .filter-select {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 8px 15px;
+        color: #fff;
+        font-size: 0.9rem;
+    }
+    .filter-select option {
+        background: #1a1a2e;
+    }
+    .cdr-table-wrapper {
+        overflow-x: auto;
+    }
+    .cdr-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .cdr-table th,
+    .cdr-table td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .cdr-table th {
+        color: #71717a;
+        font-weight: 500;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+    }
+    .cdr-table td {
+        color: #e4e4e7;
+    }
+    .cdr-table tbody tr:hover {
+        background: rgba(255, 255, 255, 0.03);
+    }
+    .status-badge {
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 0.8rem;
+    }
+    .status-badge.success {
+        background: rgba(34, 197, 94, 0.2);
+        color: #4ade80;
+    }
+    .status-badge.muted {
+        background: rgba(107, 114, 128, 0.2);
+        color: #9ca3af;
+    }
+    .btn-xs {
+        padding: 4px 10px;
+        font-size: 0.8rem;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function filterByPBX(pbxId) {
+    if (pbxId) {
+        window.location.href = '?pbx=' + pbxId;
+    } else {
+        window.location.href = '{% url "cdr_list" %}';
+    }
+}
+</script>
+{% endblock %}

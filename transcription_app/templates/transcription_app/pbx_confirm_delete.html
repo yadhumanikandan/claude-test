@@ -1,0 +1,24 @@
+{% extends 'transcription_app/base.html' %}
+
+{% block title %}Delete PBX - Whisper Transcription{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Delete PBX Configuration</h2>
+    <p style="margin-bottom: 20px;">
+        Are you sure you want to delete the PBX configuration
+        <strong>{{ pbx_config.name }}</strong> ({{ pbx_config.host }})?
+    </p>
+    <p style="color: #f87171; margin-bottom: 20px;">
+        This will also delete all associated CDR records and their transcriptions.
+    </p>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="actions">
+            <a href="{% url 'pbx_settings' %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-danger">Delete</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
