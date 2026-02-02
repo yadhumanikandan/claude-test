@@ -1,24 +1,71 @@
-# Beautiful Django Calendar App
+# Django Multi-App Project
 
-A simple and beautifully designed Django application for displaying a calendar in an authentic and modern way.
+A Django project featuring a beautiful calendar application and an audio transcription app powered by whisper.cpp.
 
-## Features
+## Applications
 
-- **Modern Design**: Beautiful gradient-based UI with smooth animations
-- **Monthly View**: Display calendar in a clean monthly grid format
-- **Today Highlighting**: Current date is highlighted with a distinctive style
-- **Easy Navigation**: Navigate between months with Previous/Next buttons
-- **Responsive**: Works perfectly on desktop and mobile devices
-- **Clean Code**: Well-organized Django structure following best practices
+### 1. Whisper Transcription App (Home)
+
+A web application for transcribing call recordings using [whisper.cpp](https://github.com/ggml-org/whisper.cpp).
+
+**Features:**
+- Upload audio files (MP3, WAV, M4A, OGG, FLAC, WebM)
+- Automatic audio conversion to WAV format using ffmpeg
+- Transcription using whisper.cpp
+- View and manage transcription history
+- Copy transcripts to clipboard
+- Beautiful dark-themed UI
+
+### 2. Calendar App
+
+A simple and beautifully designed Django application for displaying a calendar.
+
+**Features:**
+- Modern gradient-based UI with smooth animations
+- Monthly view in a clean grid format
+- Today highlighting with distinctive style
+- Easy navigation between months
+- Responsive design
 
 ## Installation
 
-1. Install Django (if not already installed):
+### Prerequisites
+
+- Python 3.11+
+- ffmpeg (for audio conversion)
+- cmake and build tools (for whisper.cpp)
+
+### Setup
+
+1. Install system dependencies:
+```bash
+# Ubuntu/Debian
+apt-get install ffmpeg cmake build-essential
+
+# macOS
+brew install ffmpeg cmake
+```
+
+2. Install Python dependencies:
 ```bash
 pip install django
 ```
 
-2. Run migrations:
+3. Clone and build whisper.cpp:
+```bash
+git clone https://github.com/ggml-org/whisper.cpp.git
+cd whisper.cpp
+cmake -B build
+cmake --build build -j --config Release
+```
+
+4. Download a whisper model (base.en recommended for English):
+```bash
+cd whisper.cpp
+bash ./models/download-ggml-model.sh base.en
+```
+
+5. Run Django migrations:
 ```bash
 python manage.py migrate
 ```
@@ -30,61 +77,71 @@ Start the development server:
 python manage.py runserver
 ```
 
-Then open your browser and navigate to:
-```
-http://127.0.0.1:8000/
-```
+Then open your browser:
+- **Transcription App**: http://127.0.0.1:8000/
+- **Calendar App**: http://127.0.0.1:8000/calendar/
+- **Admin**: http://127.0.0.1:8000/admin/
 
 ## Project Structure
 
 ```
-calendar_project/
-├── calendar_app/           # Main calendar application
+project/
+├── transcription_app/      # Audio transcription application
 │   ├── templates/          # HTML templates
-│   │   └── calendar_app/
-│   │       └── calendar.html
-│   ├── views.py           # Calendar views
-│   └── urls.py            # App URL configuration
+│   ├── views.py            # Transcription views
+│   ├── models.py           # Transcription model
+│   ├── forms.py            # Upload form
+│   └── urls.py             # App URL configuration
+├── calendar_app/           # Calendar application
+│   ├── templates/          # HTML templates
+│   ├── views.py            # Calendar views
+│   └── urls.py             # App URL configuration
 ├── calendar_project/       # Project settings
-│   ├── settings.py        # Django settings
-│   └── urls.py            # Main URL configuration
-└── manage.py              # Django management script
+│   ├── settings.py         # Django settings
+│   └── urls.py             # Main URL configuration
+├── whisper.cpp/            # Whisper.cpp (external)
+│   ├── build/bin/          # Compiled binaries
+│   └── models/             # Model files
+├── media/                  # Uploaded files
+└── manage.py               # Django management script
 ```
 
-## Features in Detail
+## Transcription App Usage
 
-### Calendar View
-- Displays the current month by default
-- Shows all days in a 7-column grid (Monday to Sunday)
-- Empty cells for days outside the current month
+1. Navigate to the home page
+2. Click to select or drag-and-drop an audio file
+3. Click "Transcribe Audio"
+4. Wait for processing (conversion + transcription)
+5. View the transcript and copy if needed
 
-### Navigation
-- **Previous**: Go to the previous month
-- **Today**: Jump back to the current month
-- **Next**: Go to the next month
+### Supported Audio Formats
+- MP3
+- WAV
+- M4A
+- OGG
+- FLAC
+- WebM
+- MP4/MPEG
 
-### Styling
-- Purple gradient theme
-- Hover effects on calendar days
-- Pulse animation on today's date
-- Smooth transitions and modern aesthetics
+### Model Configuration
+
+The app uses the `ggml-base.en.bin` model by default. To use a different model, edit the `WHISPER_MODEL` path in `transcription_app/views.py`.
+
+Available models:
+- `tiny.en` / `tiny` - Fastest, least accurate
+- `base.en` / `base` - Good balance (recommended)
+- `small.en` / `small` - More accurate
+- `medium.en` / `medium` - High accuracy
+- `large` - Best accuracy, slowest
 
 ## Technology Stack
 
 - **Backend**: Django 5.2
-- **Frontend**: HTML5, CSS3
-- **Python**: 3.11+
-- **Database**: SQLite (default Django database)
-
-## Customization
-
-You can customize the calendar appearance by editing the CSS in:
-```
-calendar_app/templates/calendar_app/calendar.html
-```
-
-The color scheme uses a purple gradient, but you can easily change the colors in the CSS section.
+- **Transcription**: whisper.cpp
+- **Audio Processing**: ffmpeg
+- **Frontend**: HTML5, CSS3, JavaScript
+- **Database**: SQLite
 
 ## License
 
-This is a simple demonstration project for educational purposes.
+This is a demonstration project for educational purposes.

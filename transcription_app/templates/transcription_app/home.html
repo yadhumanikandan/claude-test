@@ -1,0 +1,105 @@
+{% extends 'transcription_app/base.html' %}
+
+{% block title %}Upload Audio - Whisper Transcription{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>Upload Audio File</h2>
+    <form method="post" enctype="multipart/form-data" id="upload-form">
+        {% csrf_token %}
+        <div class="upload-area" id="upload-area">
+            <div class="upload-icon">&#127908;</div>
+            <label for="audio-file">
+                <p>Click to select an audio file or drag and drop</p>
+                <p style="color: #71717a; font-size: 0.9rem; margin-top: 10px;">
+                    Supports MP3, WAV, M4A, OGG, FLAC, WebM (max 100MB)
+                </p>
+            </label>
+            <input type="file" name="audio_file" id="audio-file"
+                   accept="audio/*,.mp3,.wav,.m4a,.ogg,.flac,.webm">
+            <p id="file-name"></p>
+        </div>
+        {% if form.audio_file.errors %}
+        <div class="error-box">
+            {% for error in form.audio_file.errors %}
+            <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div style="text-align: center; margin-top: 20px;">
+            <button type="submit" class="btn btn-primary" id="submit-btn" disabled>
+                Transcribe Audio
+            </button>
+        </div>
+    </form>
+</div>
+
+{% if recent_transcriptions %}
+<div class="card">
+    <h2>Recent Transcriptions</h2>
+    <ul class="transcription-list">
+        {% for item in recent_transcriptions %}
+        <li class="transcription-item">
+            <a href="{% url 'transcription_detail' pk=item.pk %}">
+                <strong>{{ item.original_filename }}</strong>
+                <span class="meta" style="margin-left: 10px;">{{ item.created_at|date:"M d, Y H:i" }}</span>
+            </a>
+            <span class="status status-{{ item.status }}">{{ item.get_status_display }}</span>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const uploadArea = document.getElementById('upload-area');
+    const fileInput = document.getElementById('audio-file');
+    const fileName = document.getElementById('file-name');
+    const submitBtn = document.getElementById('submit-btn');
+
+    fileInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            fileName.textContent = 'Selected: ' + this.files[0].name;
+            submitBtn.disabled = false;
+        } else {
+            fileName.textContent = '';
+            submitBtn.disabled = true;
+        }
+    });
+
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.style.borderColor = '#6366f1';
+        this.style.background = 'rgba(99, 102, 241, 0.1)';
+    });
+
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.style.borderColor = 'rgba(99, 102, 241, 0.5)';
+        this.style.background = 'transparent';
+    });
+
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.style.borderColor = 'rgba(99, 102, 241, 0.5)';
+        this.style.background = 'transparent';
+
+        if (e.dataTransfer.files.length > 0) {
+            fileInput.files = e.dataTransfer.files;
+            fileName.textContent = 'Selected: ' + e.dataTransfer.files[0].name;
+            submitBtn.disabled = false;
+        }
+    });
+
+    uploadArea.addEventListener('click', function() {
+        fileInput.click();
+    });
+
+    document.getElementById('upload-form').addEventListener('submit', function() {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Processing...';
+    });
+</script>
+{% endblock %}

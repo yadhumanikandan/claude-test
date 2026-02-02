@@ -41,3 +41,6 @@ db.sqlite3-journal
 # OS
 .DS_Store
 Thumbs.db
+
+# Whisper.cpp (external dependency)
+whisper.cpp/
