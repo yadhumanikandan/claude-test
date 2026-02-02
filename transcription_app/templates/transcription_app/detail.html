@@ -7,10 +7,44 @@
     <div style="display: flex; justify-content: space-between; align-items: start;">
         <div>
             <h2>{{ transcription.original_filename }}</h2>
-            <p class="meta">Uploaded {{ transcription.created_at|date:"F d, Y at H:i" }}</p>
+            <p class="meta">
+                {% if transcription.source == 'yeastar' %}
+                From PBX
+                {% else %}
+                Uploaded
+                {% endif %}
+                {{ transcription.created_at|date:"F d, Y at H:i" }}
+            </p>
         </div>
         <span class="status status-{{ transcription.status }}">{{ transcription.get_status_display }}</span>
     </div>
+
+    {% if transcription.cdr_record %}
+    <div class="call-details">
+        <h3>Call Details</h3>
+        <div class="call-grid">
+            <div class="call-item">
+                <span class="call-label">Caller</span>
+                <span class="call-value">{{ transcription.cdr_record.caller }}</span>
+            </div>
+            <div class="call-item">
+                <span class="call-label">Callee</span>
+                <span class="call-value">{{ transcription.cdr_record.callee }}</span>
+            </div>
+            <div class="call-item">
+                <span class="call-label">Duration</span>
+                <span class="call-value">
+                    {% widthratio transcription.cdr_record.duration 60 1 as minutes %}
+                    {{ minutes|default:"0" }}m {{ transcription.cdr_record.duration }}s
+                </span>
+            </div>
+            <div class="call-item">
+                <span class="call-label">Call Time</span>
+                <span class="call-value">{{ transcription.cdr_record.call_time|date:"M d, Y H:i" }}</span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 
     {% if transcription.status == 'completed' and transcription.transcript %}
     <div class="transcript-box">{{ transcription.transcript }}</div>
@@ -23,6 +57,10 @@
     <div class="transcript-box" style="text-align: center;">
         <p>Processing your audio file...</p>
         <p style="color: #71717a; margin-top: 10px;">This may take a few moments depending on the file size.</p>
+    </div>
+    {% elif transcription.status == 'downloading' %}
+    <div class="transcript-box" style="text-align: center;">
+        <p>Downloading recording from PBX...</p>
     </div>
     {% elif transcription.status == 'pending' %}
     <div class="transcript-box" style="text-align: center;">
@@ -38,6 +76,38 @@
         <a href="{% url 'transcription_delete' pk=transcription.pk %}" class="btn btn-danger">Delete</a>
     </div>
 </div>
+
+<style>
+    .call-details {
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+    .call-details h3 {
+        color: #fff;
+        font-size: 1rem;
+        margin-bottom: 15px;
+    }
+    .call-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+    .call-item {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+    .call-label {
+        color: #71717a;
+        font-size: 0.85rem;
+    }
+    .call-value {
+        color: #e4e4e7;
+        font-size: 1rem;
+    }
+</style>
 {% endblock %}
 
 {% block scripts %}

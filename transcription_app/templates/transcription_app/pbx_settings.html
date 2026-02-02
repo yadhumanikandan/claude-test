@@ -1,0 +1,156 @@
+{% extends 'transcription_app/base.html' %}
+
+{% block title %}PBX Settings - Whisper Transcription{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2>Yeastar PBX Configuration</h2>
+        <a href="{% url 'pbx_add' %}" class="btn btn-primary">Add PBX</a>
+    </div>
+
+    {% if pbx_configs %}
+    <div class="pbx-list">
+        {% for config in pbx_configs %}
+        <div class="pbx-item">
+            <div class="pbx-info">
+                <div class="pbx-header">
+                    <h3>{{ config.name }}</h3>
+                    <span class="status {% if config.is_active %}status-completed{% else %}status-pending{% endif %}">
+                        {% if config.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                </div>
+                <div class="pbx-details">
+                    <p><strong>Host:</strong> {{ config.host }}:{{ config.port }}</p>
+                    <p><strong>API Version:</strong> {{ config.api_version }}</p>
+                    <p><strong>Auto-sync:</strong> {% if config.auto_sync %}Every {{ config.sync_interval_minutes }} min{% else %}Disabled{% endif %}</p>
+                    <p><strong>Last sync:</strong> {% if config.last_sync_at %}{{ config.last_sync_at|date:"M d, Y H:i" }}{% else %}Never{% endif %}</p>
+                </div>
+            </div>
+            <div class="pbx-actions">
+                <button class="btn btn-secondary btn-sm" onclick="testConnection({{ config.pk }})">
+                    Test Connection
+                </button>
+                <form method="post" action="{% url 'pbx_sync' pk=config.pk %}" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="hours" value="24">
+                    <button type="submit" class="btn btn-primary btn-sm">Sync Now</button>
+                </form>
+                <a href="{% url 'pbx_edit' pk=config.pk %}" class="btn btn-secondary btn-sm">Edit</a>
+                <a href="{% url 'pbx_delete' pk=config.pk %}" class="btn btn-danger btn-sm">Delete</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <p>No PBX configurations found.</p>
+        <p style="color: #71717a;">Click "Add PBX" to configure your Yeastar PBX for automatic call recording transcription.</p>
+    </div>
+    {% endif %}
+</div>
+
+<div class="card">
+    <h2>How It Works</h2>
+    <ol style="line-height: 2; color: #a1a1aa;">
+        <li>Configure your Yeastar PBX connection above</li>
+        <li>Enable the API on your PBX (Settings → API)</li>
+        <li>Click "Sync Now" to fetch recent call recordings</li>
+        <li>Recordings are automatically downloaded and transcribed</li>
+        <li>View transcriptions in the main list or CDR records</li>
+    </ol>
+</div>
+
+<style>
+    .pbx-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    .pbx-item {
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    .pbx-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+    .pbx-header h3 {
+        margin: 0;
+        color: #fff;
+    }
+    .pbx-details {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 5px 20px;
+    }
+    .pbx-details p {
+        margin: 0;
+        color: #a1a1aa;
+        font-size: 0.9rem;
+    }
+    .pbx-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+    .btn-sm {
+        padding: 8px 16px;
+        font-size: 0.85rem;
+    }
+    #connection-result {
+        margin-top: 15px;
+        padding: 15px;
+        border-radius: 8px;
+        display: none;
+    }
+    #connection-result.success {
+        background: rgba(34, 197, 94, 0.2);
+        border: 1px solid rgba(34, 197, 94, 0.3);
+        color: #4ade80;
+    }
+    #connection-result.error {
+        background: rgba(239, 68, 68, 0.2);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: #f87171;
+    }
+</style>
+
+<div id="connection-result"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function testConnection(pbxId) {
+    const resultDiv = document.getElementById('connection-result');
+    resultDiv.style.display = 'block';
+    resultDiv.className = '';
+    resultDiv.textContent = 'Testing connection...';
+
+    fetch(`/pbx/${pbxId}/test/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        resultDiv.className = data.success ? 'success' : 'error';
+        resultDiv.textContent = data.message;
+    })
+    .catch(error => {
+        resultDiv.className = 'error';
+        resultDiv.textContent = 'Failed to test connection: ' + error;
+    });
+}
+</script>
+{% endblock %}

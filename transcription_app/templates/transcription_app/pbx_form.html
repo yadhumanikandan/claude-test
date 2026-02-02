@@ -1,0 +1,155 @@
+{% extends 'transcription_app/base.html' %}
+
+{% block title %}{{ title }} - Whisper Transcription{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h2>{{ title }}</h2>
+
+    <form method="post" class="pbx-form">
+        {% csrf_token %}
+
+        <div class="form-section">
+            <h3>Connection Settings</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="id_name">Name</label>
+                    {{ form.name }}
+                    {% if form.name.help_text %}<small>{{ form.name.help_text }}</small>{% endif %}
+                    {% if form.name.errors %}<span class="error">{{ form.name.errors.0 }}</span>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="id_host">Host / IP Address</label>
+                    {{ form.host }}
+                    {% if form.host.help_text %}<small>{{ form.host.help_text }}</small>{% endif %}
+                    {% if form.host.errors %}<span class="error">{{ form.host.errors.0 }}</span>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="id_port">Port</label>
+                    {{ form.port }}
+                    {% if form.port.help_text %}<small>{{ form.port.help_text }}</small>{% endif %}
+                    {% if form.port.errors %}<span class="error">{{ form.port.errors.0 }}</span>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="id_api_version">API Version</label>
+                    {{ form.api_version }}
+                    {% if form.api_version.help_text %}<small>{{ form.api_version.help_text }}</small>{% endif %}
+                </div>
+                <div class="form-group checkbox-group">
+                    {{ form.use_https }}
+                    <label for="id_use_https">Use HTTPS</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>Authentication</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="id_username">API Username</label>
+                    {{ form.username }}
+                    {% if form.username.errors %}<span class="error">{{ form.username.errors.0 }}</span>{% endif %}
+                </div>
+                <div class="form-group">
+                    <label for="id_password">API Password</label>
+                    {{ form.password }}
+                    {% if form.password.help_text %}<small>{{ form.password.help_text }}</small>{% endif %}
+                    {% if form.password.errors %}<span class="error">{{ form.password.errors.0 }}</span>{% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>Sync Settings</h3>
+            <div class="form-grid">
+                <div class="form-group checkbox-group">
+                    {{ form.is_active }}
+                    <label for="id_is_active">Active</label>
+                </div>
+                <div class="form-group checkbox-group">
+                    {{ form.auto_sync }}
+                    <label for="id_auto_sync">Auto-sync recordings</label>
+                </div>
+                <div class="form-group">
+                    <label for="id_sync_interval_minutes">Sync Interval (minutes)</label>
+                    {{ form.sync_interval_minutes }}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a href="{% url 'pbx_settings' %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+    </form>
+</div>
+
+<style>
+    .pbx-form {
+        max-width: 600px;
+    }
+    .form-section {
+        margin-bottom: 30px;
+    }
+    .form-section h3 {
+        color: #fff;
+        font-size: 1.1rem;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    .form-group label {
+        color: #e4e4e7;
+        font-size: 0.9rem;
+    }
+    .form-group input[type="text"],
+    .form-group input[type="password"],
+    .form-group input[type="number"],
+    .form-group select {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        padding: 10px 15px;
+        color: #fff;
+        font-size: 1rem;
+    }
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: #6366f1;
+    }
+    .form-group small {
+        color: #71717a;
+        font-size: 0.8rem;
+    }
+    .form-group .error {
+        color: #f87171;
+        font-size: 0.85rem;
+    }
+    .checkbox-group {
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+    }
+    .checkbox-group input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: #6366f1;
+    }
+    .form-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+</style>
+{% endblock %}
